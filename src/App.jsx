@@ -5,6 +5,7 @@ import { Physics, RigidBody } from "@react-three/rapier";
 import Player from './Player';
 import CameraController from './CameraController';
 import { useKeyboardInput, useMobileInput, VirtualJoystick } from './InputManager';
+import * as THREE from 'three';
 
 // デバイス判定フック
 const useDeviceDetection = () => {
@@ -240,26 +241,42 @@ export default function App() {
       )}
       
       <Canvas 
-        shadows 
+        shadows={{
+          enabled: true,
+          type: THREE.PCFSoftShadowMap,
+        }}
         camera={{ position: [0, 5, 5], fov: 60 }}
         style={{ width: '100%', height: '100%' }}
         frameloop="always"
         dpr={[1, 2]}
         performance={{ min: 0.5 }}
+        onCreated={({ gl, scene }) => {
+          // シャドウマップの設定
+          gl.shadowMap.enabled = true;
+          gl.shadowMap.type = THREE.PCFSoftShadowMap;
+          
+          // より高品質な設定
+          gl.shadowMap.autoUpdate = true;
+          gl.physicallyCorrectLights = true;
+        }}
       >
-        <Sky sunPosition={[100, 20, 100]} />
+        {/* <Sky sunPosition={[100, 20, 100]} /> */}
         <ambientLight intensity={0.3} />
         <directionalLight 
           castShadow 
-          intensity={0.5} 
-          position={[100, 100, 0]}
+          intensity={0.8} 
+          position={[20, 20, 0]}
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
-          shadow-camera-far={50}
-          shadow-camera-left={-10}
-          shadow-camera-right={10}
-          shadow-camera-top={10}
-          shadow-camera-bottom={-10}
+          shadow-camera-near={0.1}
+          shadow-camera-far={100}
+          shadow-camera-left={-20}
+          shadow-camera-right={20}
+          shadow-camera-top={20}
+          shadow-camera-bottom={-20}
+          shadow-bias={-0.0005}
+          shadow-normalBias={0.02}
+          shadow-radius={10}
         />
         <Environment preset="sunset" />
         

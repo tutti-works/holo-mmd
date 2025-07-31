@@ -19,6 +19,9 @@ const Character = forwardRef(({ animationState }, ref) => {
       group.current.traverse((child) => {
         if (child.isMesh) {
           child.name = 'player';
+          // 🔥 重要: 自プレイヤーの影を有効化
+          child.castShadow = true;
+          child.receiveShadow = true;
         }
       });
     }
