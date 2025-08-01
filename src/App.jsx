@@ -6,6 +6,7 @@ import Player from './Player';
 import CameraController from './CameraController';
 import { useKeyboardInput, useMobileInput, VirtualJoystick } from './InputManager';
 import * as THREE from 'three';
+import HololiveCharacter from './HololiveCharacter';
 
 // デバイス判定フック
 const useDeviceDetection = () => {
@@ -257,14 +258,14 @@ export default function App() {
           
           // より高品質な設定
           gl.shadowMap.autoUpdate = true;
-          gl.physicallyCorrectLights = true;
+          // gl.physicallyCorrectLights = true;
         }}
       >
         {/* <Sky sunPosition={[100, 20, 100]} /> */}
         <ambientLight intensity={0.3} />
         <directionalLight 
           castShadow 
-          intensity={0.8} 
+          intensity={0.3} 
           position={[20, 20, 0]}
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
@@ -282,7 +283,7 @@ export default function App() {
         
         <Physics 
           gravity={[0, -9.81, 0]} 
-          debug={true}
+          debug={false}
           timeStep={1/60}
           paused={false}
         >
@@ -293,6 +294,10 @@ export default function App() {
               onPositionUpdate={setPlayerPosition}
               initialPosition={[0, 1, 0]}
             />
+
+            <RigidBody type="fixed" colliders="cuboid" position={[-3, -0.9, 2]} rotation={[0, Math.PI / 4, 0]}>
+              <HololiveCharacter scale={1.2} />
+            </RigidBody>
           </Suspense>
           
           <Room />
