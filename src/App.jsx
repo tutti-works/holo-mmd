@@ -7,6 +7,7 @@ import CameraController from './CameraController';
 import { useKeyboardInput, useMobileInput, VirtualJoystick } from './InputManager';
 import * as THREE from 'three';
 import HololiveCharacter from './HololiveCharacter';
+import YouTubeScreen from './YouTubeScreen';
 
 // デバイス判定フック
 const useDeviceDetection = () => {
@@ -105,7 +106,7 @@ const Room = () => {
 };
 
 // デバッグ情報コンポーネント
-const DebugInfo = ({ inputState, playerPosition, isMobile }) => {
+const DebugInfo = ({ inputState, playerPosition, isMobile, videoTime }) => {
   if (!isMobile) return null;
 
   return (
@@ -137,6 +138,11 @@ const DebugInfo = ({ inputState, playerPosition, isMobile }) => {
           <div>Z: {playerPosition.z?.toFixed(2)}</div>
         </div>
       )}
+      {videoTime !== undefined && (
+        <div style={{ marginTop: '8px' }}>
+          <div>Video Time: {videoTime.toFixed(2)}s</div>
+        </div>
+      )}
     </div>
   );
 };
@@ -146,7 +152,10 @@ export default function App() {
   const isMobile = useDeviceDetection();
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const [playerPosition, setPlayerPosition] = useState(null);
+  const [videoTime, setVideoTime] = useState(0);
   const cameraRef = useRef();
+  const youtubeScreenRef = useRef();
+  const hololiveCharacterRef = useRef();
 
   // 入力管理
   const keyboardInput = useKeyboardInput();
@@ -200,6 +209,11 @@ export default function App() {
       };
     }
   }, [isMobile]);
+
+  // YouTube動画の時間更新ハンドラー
+  const handleVideoTimeUpdate = (time) => {
+    setVideoTime(time);
+  };
 
   return (
     <div style={{ 
@@ -258,7 +272,6 @@ export default function App() {
           
           // より高品質な設定
           gl.shadowMap.autoUpdate = true;
-          // gl.physicallyCorrectLights = true;
         }}
       >
         {/* <Sky sunPosition={[100, 20, 100]} /> */}
@@ -295,9 +308,35 @@ export default function App() {
               initialPosition={[0, 1, 0]}
             />
 
+            {/* 既存の静的キャラクター */}
             <RigidBody type="fixed" colliders="cuboid" position={[-3, -0.9, 2]} rotation={[0, Math.PI / 4, 0]}>
               <HololiveCharacter scale={1.2} />
             </RigidBody>
+
+            {/* 同期されたキャラクター（スクリーンの前） */}
+            <group>
+              <RigidBody type="fixed" colliders="cuboid" position={[0, -0.9, -5]}>
+                <HololiveCharacter 
+                  ref={hololiveCharacterRef}
+                  scale={1.2} 
+                  syncTime={videoTime}
+                  animationIndex={0}
+                  rotation={[0, 0, 0]}
+                />
+              </RigidBody>
+            </group>
+
+            {/* YouTubeスクリーン（最後に描画） */}
+            <group>
+              <YouTubeScreen
+                ref={youtubeScreenRef}
+                videoId="KfZR9jVP6tw"
+                position={[0, 3, -8]}
+                scale={[6, 3.375, 0.1]}
+                onTimeUpdate={handleVideoTimeUpdate}
+                autoplay={false}
+              />
+            </group>
           </Suspense>
           
           <Room />
@@ -324,6 +363,7 @@ export default function App() {
         inputState={finalInputState || {}}
         playerPosition={playerPosition}
         isMobile={isMobile}
+        videoTime={videoTime}
       />
     </div>
   );
